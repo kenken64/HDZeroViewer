@@ -15,6 +15,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
         useMaterial3: true,
+        scaffoldBackgroundColor: Colors.red,
         textTheme: const TextTheme(
             bodyLarge: TextStyle(),
             bodyMedium: TextStyle(),
@@ -45,7 +46,9 @@ class _MyHomePageState extends State<MyHomePage> {
   final List<String> videoUrls = [
     'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
     'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
+    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
     // Add more video URLs here
   ];
 
@@ -61,8 +64,20 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title, style: TextStyle(color: Colors.red),),
         leading: Icon(Icons.menu, color: Colors.red)
       ),
-      body: ListView.builder(
+      body: ListView.separated(
+        padding: MediaQuery.of(context).padding.copyWith(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            top: 0,
+        ),
+        separatorBuilder: (context, index) => const Divider(
+              color: Colors.black, 
+        ),
         itemCount: videoUrls.length,
+        addAutomaticKeepAlives: true,
+        addRepaintBoundaries: false,
+        cacheExtent: double.infinity,
         itemBuilder: (BuildContext context, int index) {
           return VideoListItem(videoUrl: videoUrls[index]);
         },
@@ -109,20 +124,12 @@ class _VideoListItemState extends State<VideoListItem> {
   }
 
   void _onIconTap() {
+    print("tap !");
     if(_controller.value.isPlaying) {
         _controller.pause();
     }else{
         _controller.play();
     }
-       
-    
-    setState(() {
-      if(_controller.value.isPlaying) {
-          _iconVisible = true;
-      }else{
-         _iconVisible = false;
-      }
-    });
   } 
 
   @override
@@ -131,24 +138,16 @@ class _VideoListItemState extends State<VideoListItem> {
       future: _init(),
       builder: (context, snapshot) => AnimatedContainer(
         duration: const Duration(seconds: 1),
-        height: _controller.value.size.height,
-        width: _controller.value.size.width,
-        child: !_iconVisible?
+        child: 
           GestureDetector(
           onTap: _onIconTap,
-          child: Stack(children: [
-            Align(child: AspectRatio(
+          behavior: HitTestBehavior.translucent,
+          child:  AbsorbPointer(child: Align(child: AspectRatio(
                 aspectRatio: _controller.value.aspectRatio,
                 child: VideoPlayer(_controller),
               ),
-            ),
-            Align(
-              child: _controller.value.isPlaying ? Icon(Icons.play_circle_fill, 
-                size: 90.0,
-                color: Colors.red) :SizedBox() 
-            ),
-          ])
-        ): SizedBox(),
+            )),
+        ),
       ),
     );
   }
